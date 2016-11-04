@@ -40,7 +40,7 @@ def ReadBWT(bwtColfilename,bwtRefFileName):
     fhand=open(bwtRefFileName)
     bwtRefInp=fhand.read()
     bwtRef=bwtRefInp.split("\n")
-    print bwtRef
+    #print bwtRef
     
     fhand=open(bwtColfilename)
     bwtLastColInp=fhand.read()
@@ -65,9 +65,9 @@ def ReadBWT(bwtColfilename,bwtRefFileName):
     #sample every delta-th value to store on disk
     delta = 10
     ReadMatrixSave = ReadMatrix[::delta]
-    print ReadMatrixSave
+   # print ReadMatrixSave
     totCountEach=np.asarray(ReadMatrix[-1,:]).flatten()
-    print "totCountEach",totCountEach
+    #print "totCountEach",totCountEach
 
 #--------------------------------------------------------------------------------------
 #Rank query
@@ -99,7 +99,7 @@ def FindSubBands(bandObj,seqChar,maxMismatches):
             continue
         else:
             #for each if the entry in indexOfSeqChar obtain rank
-            print "indexOfSeqChar=",indexOfSeqChar
+           # print "indexOfSeqChar=",indexOfSeqChar
             minRank=RankQuery(char,indexOfSeqChar[0]+bandObj.startIndex)
             maxRank=RankQuery(char,indexOfSeqChar[-1]+bandObj.startIndex) 
             startBandIndex, endBandIndex = FindBand(char,minRank,maxRank)
@@ -119,7 +119,7 @@ def PatternApproxMatch(inpString,maxMismatches=0):
     
     global firstColStartIndex
     firstColStartIndex=np.insert(np.cumsum(totCountEach),0,0)
-    print "firstColStartIndex=",firstColStartIndex
+   # print "firstColStartIndex=",firstColStartIndex
     
     # Initializations
     seqChar=inpString[-1]
@@ -155,7 +155,7 @@ def PatternApproxMatch(inpString,maxMismatches=0):
          # positions=(np.asarray(matchPositions)).astype(int)        
          
     readMatchPositions=dict(zip(matchPositions,confidenceLevel))
-    print readMatchPositions
+    #print readMatchPositions
     return readMatchPositions    
 
 
@@ -180,18 +180,24 @@ ReadBWT(bwtLastColFileName,bwtRefFileName)
 
 newkeys=list(exonsBinPositions.keys())
 exonBinReadsCount={key:0 for key in newkeys}
+counter=0
+with open(readsFileName) as readsFileHand:
+     for currentRead in readsFileHand:
+         currentRead=currentRead.replace("N","")
+         currentRead=currentRead.replace("\n","")
+         readMatchPositions=PatternApproxMatch(currentRead,numOfAllowedMismatches)
+         #print "position=",readMatchPositions
+         
+         BinningReads(readMatchPositions,currentRead)
+         print "Read Count :",counter
+         print "ExonBinReadsCount:",exonBinReadsCount
+         print "------------------------------------------------------------"
+         counter=counter+1
 
-readsFileHand=open(readsFileName)
-for currentRead in readsFileHand:
-    currentRead=currentRead.replace("N","")
-    currentRead=currentRead.replace("\n","")
-    
-    readMatchPositions=PatternApproxMatch(currentRead,numOfAllowedMismatches)
-    print "position=",readMatchPositions
-    BinningReads(readMatchPositions,currentRead)
 
-
-print exonBinReadsCount
+#--------------------------------------------------------------------------
+#Version 1 : Base version
+#Version 2 : Changed fhand= open(readsFileName) to with open(readsFileName)
 
 
 
